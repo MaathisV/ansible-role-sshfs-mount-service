@@ -1,0 +1,31 @@
+---
+  - name: Ensure sshfs is installed
+    package:
+      name: sshfs
+      state: present
+    become: true
+  
+  - name: Create systemd service files for each mount
+    template:
+      src: sshfs-service.j2
+      dest: /etc/systemd/system/sshfs-{{ item.name }}.service
+      mode: '0644'
+    loop: "{{ sshfs_mounts }}"
+    loop_control:
+      label: "{{ item.name }}"
+    become: true
+  
+  - name: Reload systemd
+    systemd:
+      daemon_reload: true
+    become: true
+  
+  - name: Enable and start all sshfs services
+    systemd:
+      name: "sshfs-{{ item.name }}"
+      enabled: true
+      state: started
+    loop: "{{ sshfs_mounts }}"
+    loop_control:
+      label: "{{ item.name }}"
+    become: true

@@ -1,0 +1,24 @@
+[Unit]
+Description=SSHFS mount {{ item.name }}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sshfs {{ item.ssh_user }}@{{ item.ssh_host }}:{{ item.remote_path }} {{ item.local_path }} \
+  -o IdentityFile={{ item.identity_file | default(sshfs_identity_file) }} \
+  -o allow_other \
+  -o reconnect \
+  {% if item.uid is defined %}-o uid={{ item.uid }} {% endif %}\
+  {% if item.gid is defined %}-o gid={{ item.gid }} {% endif %}\
+  {% if item.umask is defined %}-o umask={{ item.umask }} {% endif %}\
+  -o ServerAliveInterval=15 \
+  -o ServerAliveCountMax=3 \
+  -o StrictHostKeyChecking=no \
+  -o auto_cache
+ExecStop=/bin/fusermount -u {{ item.local_path }}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
