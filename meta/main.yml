@@ -1,0 +1,9 @@
+galaxy_info:
+  author: sshfs-mount-service
+  description: Create systemctl service for auto mounting hosts with sshfs 
+
+  min_ansible_version: 2.2
+
+  galaxy_tags: [sshfs, automount, service, systemctl]
+
+dependencies: []
