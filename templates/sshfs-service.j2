@@ -2,22 +2,14 @@
 Description=SSHFS mount {{ mount.name }}
 After=network-online.target
 Wants=network-online.target
+StartLimitBurst=10
+StartLimitIntervalSec=10
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/sshfs {{ mount.ssh_user }}@{{ mount.ssh_host }}:{{ mount.remote_path }} {{ mount.local_path }} \
-  -o IdentityFile={{ mount.identity_file | default(sshfs_identity_file) }} \
-  -o allow_other \
-  -o reconnect \
-  {% if mount.uid is defined %}-o uid={{ mount.uid }} \{% endif %}
-  {% if mount.gid is defined %}-o gid={{ mount.gid }} \{% endif %}
-  {% if mount.umask is defined %}-o umask={{ mount.umask }} \{% endif %}
-  -o ServerAliveInterval=15 \
-  -o ServerAliveCountMax=3 \
-  -o auto_cache
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/sshfs {{ mount.ssh_user }}@{{ mount.ssh_host }}:{{ mount.remote_path }} {{ mount.local_path }} -o IdentityFile={{ mount.identity_file | default(sshfs_identity_file) }} -o allow_other -o reconnect {% if mount.uid is defined %}-o uid={{ mount.uid }}{% endif %} {% if mount.gid is defined %}-o gid={{ mount.gid }}{% endif %} {% if mount.umask is defined %}-o umask={{ mount.umask }}{% endif %} -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o auto_cache
 ExecStop=/bin/fusermount -u {{ mount.local_path }}
-Restart=always
-RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
