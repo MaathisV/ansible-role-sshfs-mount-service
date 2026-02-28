@@ -5,6 +5,16 @@
       state: present
     become: true
   
+  - name: Ensure mount directories exist
+    file:
+      path: "{{ item.local_path }}"
+      state: directory
+      mode: "0755"
+    loop: "{{ sshfs_mounts }}"
+    loop_control:
+      label: "{{ item.name }}"
+    become: true
+
   - name: Create systemd service files for each mount
     template:
       src: sshfs-service.j2
@@ -14,6 +24,8 @@
     loop_control:
       label: "{{ item.name }}"
     become: true
+    vars:
+      mount: "{{ item }}"
   
   - name: Reload systemd
     systemd:

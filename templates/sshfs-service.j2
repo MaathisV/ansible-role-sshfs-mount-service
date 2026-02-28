@@ -1,22 +1,21 @@
 [Unit]
-Description=SSHFS mount {{ item.name }}
+Description=SSHFS mount {{ mount.name }}
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/sshfs {{ item.ssh_user }}@{{ item.ssh_host }}:{{ item.remote_path }} {{ item.local_path }} \
-  -o IdentityFile={{ item.identity_file | default(sshfs_identity_file) }} \
+ExecStart=/usr/bin/sshfs {{ mount.ssh_user }}@{{ mount.ssh_host }}:{{ mount.remote_path }} {{ mount.local_path }} \
+  -o IdentityFile={{ mount.identity_file | default(sshfs_identity_file) }} \
   -o allow_other \
   -o reconnect \
-  {% if item.uid is defined %}-o uid={{ item.uid }} {% endif %}\
-  {% if item.gid is defined %}-o gid={{ item.gid }} {% endif %}\
-  {% if item.umask is defined %}-o umask={{ item.umask }} {% endif %}\
+  {% if mount.uid is defined %}-o uid={{ mount.uid }} \{% endif %}
+  {% if mount.gid is defined %}-o gid={{ mount.gid }} \{% endif %}
+  {% if mount.umask is defined %}-o umask={{ mount.umask }} \{% endif %}
   -o ServerAliveInterval=15 \
   -o ServerAliveCountMax=3 \
-  -o StrictHostKeyChecking=no \
   -o auto_cache
-ExecStop=/bin/fusermount -u {{ item.local_path }}
+ExecStop=/bin/fusermount -u {{ mount.local_path }}
 Restart=always
 RestartSec=10
 
